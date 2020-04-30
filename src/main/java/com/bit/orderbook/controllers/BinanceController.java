@@ -27,8 +27,9 @@ public class BinanceController {
     public Flux<String> getOrderBook(@PathVariable(name = "ticker") String ticker) {
         return Flux.<String>generate(generator -> {
             try {
-                generator.next(orderBookFetcher.getBinanceOrderBook(ticker));
-                logger.debug("Sleeping...");
+                String binanceOrderBook = orderBookFetcher.getBinanceOrderBook(ticker);
+                logger.debug("Pushing data to client: " + binanceOrderBook);
+                generator.next(binanceOrderBook);
                 Thread.sleep(30000);
             } catch (InterruptedException e) {
                 generator.complete();

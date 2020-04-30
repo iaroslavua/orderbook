@@ -35,17 +35,23 @@ public class OrderBookFetcherImpl implements OrderBookFetcher {
     }
 
     @Override
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(fixedDelay = 10000)
     public void scheduledFetch() {
         tickerToOrderBook.forEach((ticker, orderBook) -> {
-            tickerToOrderBook.put(ticker, fetchBinanceOrderBook(ticker));
+            try {
+                tickerToOrderBook.put(ticker, fetchBinanceOrderBook(ticker));
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                logger.info("Interrupted during fetching " + ticker);
+            } catch (Exception e) {
+                logger.error("Failed to get order book for " + ticker);
+            }
         });
     }
 
     private String fetchBinanceOrderBook(String ticker) {
         ResponseEntity<String> response = restTemplate.getForEntity(BINANCE_API_URL + ticker, String.class);
-        logger.debug("Response code: " + response.getStatusCodeValue());
-        logger.debug("Response body: " + response.getBody());
+        logger.debug(String.format("\nTicker: %s\nResponse Code: %d\nBody: %s", ticker, response.getStatusCodeValue(), response.getBody()));
 
         return response.getBody();
     }
