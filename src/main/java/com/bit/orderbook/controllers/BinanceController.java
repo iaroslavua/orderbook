@@ -1,5 +1,6 @@
 package com.bit.orderbook.controllers;
 
+import com.bit.orderbook.dto.BinanceOrderBookDto;
 import com.bit.orderbook.services.impl.OrderBookFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +25,10 @@ public class BinanceController {
     }
 
     @GetMapping(path = "/binance/{ticker}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> getOrderBook(@PathVariable(name = "ticker") String ticker) {
-        return Flux.<String>generate(generator -> {
+    public Flux<BinanceOrderBookDto> getOrderBook(@PathVariable(name = "ticker") String ticker) {
+        return Flux.<BinanceOrderBookDto>generate(generator -> {
             try {
-                String binanceOrderBook = orderBookFetcher.getBinanceOrderBook(ticker);
+                BinanceOrderBookDto binanceOrderBook = orderBookFetcher.getBinanceOrderBook(ticker);
                 logger.debug("Pushing data to client: " + binanceOrderBook);
                 generator.next(binanceOrderBook);
                 Thread.sleep(30000);

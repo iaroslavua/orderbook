@@ -1,5 +1,6 @@
 package com.bit.orderbook.services;
 
+import com.bit.orderbook.dto.BinanceOrderBookDto;
 import com.bit.orderbook.services.impl.OrderBookFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,25 +19,26 @@ public class OrderBookFetcherImpl implements OrderBookFetcher {
 
     private static final String BINANCE_API_URL = "https://api.binance.com/api/v3/depth?limit=5000&symbol=";
 
-    private ConcurrentHashMap<String, String> tickerToOrderBook = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, BinanceOrderBookDto> tickerToOrderBook = new ConcurrentHashMap<>();
 
     @Autowired
     private RestTemplate restTemplate;
 
     @Override
-    public String getBinanceOrderBook(String ticker) {
+    public BinanceOrderBookDto getBinanceOrderBook(String ticker) {
         if (tickerToOrderBook.containsKey(ticker)) {
             return tickerToOrderBook.get(ticker);
         } else {
-            String orderBook = fetchBinanceOrderBook(ticker);
+            BinanceOrderBookDto orderBook = fetchBinanceOrderBook(ticker);
             tickerToOrderBook.put(ticker, orderBook);
             return orderBook;
         }
     }
 
     @Override
-    @Scheduled(fixedDelay = 10000)
+    @Scheduled(cron = "0 * * * * *")
     public void scheduledFetch() {
+        logger.trace("Fetching data for all tickers");
         tickerToOrderBook.forEach((ticker, orderBook) -> {
             try {
                 tickerToOrderBook.put(ticker, fetchBinanceOrderBook(ticker));
@@ -49,8 +51,8 @@ public class OrderBookFetcherImpl implements OrderBookFetcher {
         });
     }
 
-    private String fetchBinanceOrderBook(String ticker) {
-        ResponseEntity<String> response = restTemplate.getForEntity(BINANCE_API_URL + ticker, String.class);
+    private BinanceOrderBookDto fetchBinanceOrderBook(String ticker) {
+        ResponseEntity<BinanceOrderBookDto> response = restTemplate.getForEntity(BINANCE_API_URL + ticker, BinanceOrderBookDto.class);
         logger.debug(String.format("\nTicker: %s\nResponse Code: %d\nBody: %s", ticker, response.getStatusCodeValue(), response.getBody()));
 
         return response.getBody();

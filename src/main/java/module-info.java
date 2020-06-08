@@ -6,5 +6,12 @@ open module orderbook {
     requires org.slf4j;
     requires spring.beans;
     requires reactor.core;
+
     requires com.fasterxml.classmate;
+    requires com.fasterxml.jackson.annotation;
+    requires com.fasterxml.jackson.core;
+    requires com.fasterxml.jackson.databind;
+
+    requires lombok;
+    requires org.mapstruct.processor;
 }
